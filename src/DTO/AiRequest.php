@@ -12,22 +12,22 @@ namespace LiveNetworks\LnAiBridge\DTO;
  */
 readonly class AiRequest
 {
-    /**
-     * @param  string         $prompt      Главен prompt кон AI
-     * @param  string|null    $system      Системска порака (system prompt)
-     * @param  array<string, string> $context Контекст парови (клуч => вредност), се вметнуваат како XML тагови
-     * @param  Message[]      $history     Историја на претходни пораки (multi-turn)
-     * @param  float          $temperature Креативност на одговорот (0.0 - 1.0)
-     * @param  int            $maxTokens   Максимален број токени во одговорот
-     * @param  array<string, mixed> $meta   Дополнителни мета-податоци
-     */
-    public function __construct(
-        public string  $prompt,
-        public ?string $system = null,
-        public array   $context = [],
-        public array   $history = [],
-        public float   $temperature = 0.7,
-        public int     $maxTokens = 1024,
-        public array   $meta = [],
-    ) {}
+	/**
+	 * @param  string         $prompt      Главен prompt кон AI
+	 * @param  string|null    $system      Системска порака (system prompt)
+	 * @param  array<string, string> $context Контекст парови (клуч => вредност), се вметнуваат како XML тагови
+	 * @param  Message[]      $history     Историја на претходни пораки (multi-turn)
+	 * @param  float          $temperature Креативност на одговорот (0.0 - 1.0)
+	 * @param  int            $maxTokens   Максимален број токени во одговорот
+	 * @param  array<string, mixed> $meta   Дополнителни мета-податоци
+	 */
+	public function __construct(
+		public string  $prompt,
+		public ?string $system = null,
+		public array   $context = [],
+		public array   $history = [],
+		public float   $temperature = 0.7,
+		public int     $maxTokens = 1024,
+		public array   $meta = [],
+	) {}
 }

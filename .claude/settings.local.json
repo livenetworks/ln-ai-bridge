@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(composer validate:*)"
+      "Bash(composer validate:*)",
+      "Bash(find . -name \"*.php\" -exec perl -pi -e 's/^\\( +\\)/\"\"\\\\t\"\" x \\(length\\($1\\)\\\\/4\\)/e' {} +)",
+      "Bash(find /c/laragon/www/ln-ai-bridge -name \"*.php\" -exec perl -pi -e 's/^\\(\\\\t*\\)\\\\*/$1 */; s/^\\(\\\\t*\\) \\\\*\\\\//$1 *\\\\//' {} +)"
     ]
   }
 }

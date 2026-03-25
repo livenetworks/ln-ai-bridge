@@ -14,28 +14,28 @@ use Illuminate\Support\ServiceProvider;
  */
 class AiBridgeServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-        $this->mergeConfigFrom(
-            __DIR__ . '/../config/ai-bridge.php',
-            'ai-bridge',
-        );
+	public function register(): void
+	{
+		$this->mergeConfigFrom(
+			__DIR__ . '/../config/ai-bridge.php',
+			'ai-bridge',
+		);
 
-        $this->app->singleton(AiBridgeManager::class, function () {
-            return new AiBridgeManager();
-        });
-    }
+		$this->app->singleton(AiBridgeManager::class, function () {
+			return new AiBridgeManager();
+		});
+	}
 
-    public function boot(): void
-    {
-        if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__ . '/../config/ai-bridge.php' => config_path('ai-bridge.php'),
-            ], 'ai-bridge-config');
+	public function boot(): void
+	{
+		if ($this->app->runningInConsole()) {
+			$this->publishes([
+				__DIR__ . '/../config/ai-bridge.php' => config_path('ai-bridge.php'),
+			], 'ai-bridge-config');
 
-            $this->publishes([
-                __DIR__ . '/../SKILL.md' => base_path('.claude/skills/ln-ai-bridge.md'),
-            ], 'ai-bridge-skill');
-        }
-    }
+			$this->publishes([
+				__DIR__ . '/../SKILL.md' => base_path('.claude/skills/ln-ai-bridge.md'),
+			], 'ai-bridge-skill');
+		}
+	}
 }

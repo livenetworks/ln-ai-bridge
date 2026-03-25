@@ -21,8 +21,8 @@ use LiveNetworks\LnAiBridge\PromptBuilder;
  */
 class AiBridge extends Facade
 {
-    protected static function getFacadeAccessor(): string
-    {
-        return AiBridgeManager::class;
-    }
+	protected static function getFacadeAccessor(): string
+	{
+		return AiBridgeManager::class;
+	}
 }

@@ -15,78 +15,78 @@ use LiveNetworks\LnAiBridge\DTO\AiResponse;
  */
 class OpenAiProvider extends AbstractProvider
 {
-    public function name(): string
-    {
-        return 'openai';
-    }
+	public function name(): string
+	{
+		return 'openai';
+	}
 
-    protected function endpoint(): string
-    {
-        return '/v1/chat/completions';
-    }
+	protected function endpoint(): string
+	{
+		return '/v1/chat/completions';
+	}
 
-    protected function buildHeaders(): array
-    {
-        return [
-            'Authorization' => 'Bearer ' . $this->config['api_key'],
-            'Content-Type'  => 'application/json',
-        ];
-    }
+	protected function buildHeaders(): array
+	{
+		return [
+			'Authorization' => 'Bearer ' . $this->config['api_key'],
+			'Content-Type'  => 'application/json',
+		];
+	}
 
-    /**
-     * Гради payload за OpenAI Chat Completions API.
-     *
-     * Системската порака е прв елемент во messages низата.
-     * Историјата и тековниот prompt следат по неа.
-     */
-    protected function buildPayload(AiRequest $request): array
-    {
-        $messages = [];
+	/**
+	 * Гради payload за OpenAI Chat Completions API.
+	 *
+	 * Системската порака е прв елемент во messages низата.
+	 * Историјата и тековниот prompt следат по неа.
+	 */
+	protected function buildPayload(AiRequest $request): array
+	{
+		$messages = [];
 
-        // Системска порака (ако има)
-        if ($request->system !== null) {
-            $messages[] = [
-                'role'    => 'system',
-                'content' => $request->system,
-            ];
-        }
+		// Системска порака (ако има)
+		if ($request->system !== null) {
+			$messages[] = [
+				'role'    => 'system',
+				'content' => $request->system,
+			];
+		}
 
-        // Историја на претходни пораки (multi-turn)
-        foreach ($request->history as $message) {
-            $messages[] = [
-                'role'    => $message->role,
-                'content' => $message->content,
-            ];
-        }
+		// Историја на претходни пораки (multi-turn)
+		foreach ($request->history as $message) {
+			$messages[] = [
+				'role'    => $message->role,
+				'content' => $message->content,
+			];
+		}
 
-        // Тековен prompt како последна корисничка порака
-        $messages[] = [
-            'role'    => 'user',
-            'content' => $request->prompt,
-        ];
+		// Тековен prompt како последна корисничка порака
+		$messages[] = [
+			'role'    => 'user',
+			'content' => $request->prompt,
+		];
 
-        return [
-            'model'       => $this->model(),
-            'messages'    => $messages,
-            'max_tokens'  => $request->maxTokens,
-            'temperature' => $request->temperature,
-        ];
-    }
+		return [
+			'model'       => $this->model(),
+			'messages'    => $messages,
+			'max_tokens'  => $request->maxTokens,
+			'temperature' => $request->temperature,
+		];
+	}
 
-    protected function parseResponse(array $data): AiResponse
-    {
-        $content = $data['choices'][0]['message']['content'] ?? '';
+	protected function parseResponse(array $data): AiResponse
+	{
+		$content = $data['choices'][0]['message']['content'] ?? '';
 
-        return AiResponse::ok(
-            content:    $content,
-            provider:   $this->name(),
-            model:      $data['model'] ?? $this->model(),
-            stopReason: $data['choices'][0]['finish_reason'] ?? null,
-            usage:      [
-                'input_tokens'  => $data['usage']['prompt_tokens'] ?? 0,
-                'output_tokens' => $data['usage']['completion_tokens'] ?? 0,
-            ],
-            raw: $data,
-        );
-    }
+		return AiResponse::ok(
+			content:    $content,
+			provider:   $this->name(),
+			model:      $data['model'] ?? $this->model(),
+			stopReason: $data['choices'][0]['finish_reason'] ?? null,
+			usage:      [
+				'input_tokens'  => $data['usage']['prompt_tokens'] ?? 0,
+				'output_tokens' => $data['usage']['completion_tokens'] ?? 0,
+			],
+			raw: $data,
+		);
+	}
 }

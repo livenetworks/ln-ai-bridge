@@ -12,24 +12,24 @@ namespace LiveNetworks\LnAiBridge\DTO;
  */
 readonly class Message
 {
-    public function __construct(
-        public string $role,
-        public string $content,
-    ) {}
+	public function __construct(
+		public string $role,
+		public string $content,
+	) {}
 
-    /**
-     * Креира корисничка порака.
-     */
-    public static function user(string $content): self
-    {
-        return new self('user', $content);
-    }
+	/**
+	 * Креира корисничка порака.
+	 */
+	public static function user(string $content): self
+	{
+		return new self('user', $content);
+	}
 
-    /**
-     * Креира асистентска порака.
-     */
-    public static function assistant(string $content): self
-    {
-        return new self('assistant', $content);
-    }
+	/**
+	 * Креира асистентска порака.
+	 */
+	public static function assistant(string $content): self
+	{
+		return new self('assistant', $content);
+	}
 }
