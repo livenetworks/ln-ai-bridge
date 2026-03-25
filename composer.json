@@ -1,0 +1,44 @@
+{
+    "name": "livenetworks/ln-ai-bridge",
+    "description": "AI provider abstraction layer for Laravel applications. Unified interface for Claude, OpenAI, and other AI services.",
+    "type": "library",
+    "license": "proprietary",
+    "keywords": ["laravel", "ai", "claude", "openai", "llm", "bridge"],
+    "authors": [
+        {
+            "name": "Dalibor Sojic"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^11.0|^12.0",
+        "illuminate/http": "^11.0|^12.0",
+        "guzzlehttp/guzzle": "^7.8"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0|^10.0",
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "LiveNetworks\\LnAiBridge\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "LiveNetworks\\LnAiBridge\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "LiveNetworks\\LnAiBridge\\AiBridgeServiceProvider"
+            ],
+            "aliases": {
+                "AiBridge": "LiveNetworks\\LnAiBridge\\Facades\\AiBridge"
+            }
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
