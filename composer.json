@@ -2,7 +2,7 @@
     "name": "livenetworks/ln-ai-bridge",
     "description": "AI provider abstraction layer for Laravel applications. Unified interface for Claude, OpenAI, and other AI services.",
     "type": "library",
-    "license": "proprietary",
+    "license": "MIT",
     "keywords": ["laravel", "ai", "claude", "openai", "llm", "bridge"],
     "authors": [
         {

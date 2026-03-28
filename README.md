@@ -169,4 +169,4 @@ AiBridge::register('mistral', MistralProvider::class);
 
 ## License
 
-Proprietary — Live Networks DOOEL.
+MIT License — Live Networks DOOEL.
