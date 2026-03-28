@@ -11,7 +11,7 @@ use LiveNetworks\LnAiBridge\DTO\AiResponse;
 use LiveNetworks\LnAiBridge\PromptBuilder;
 
 /**
- * Facade за AiBridgeManager.
+ * Facade for AiBridgeManager.
  *
  * @method static PromptBuilder prompt()
  * @method static AiResponse send(AiRequest $request, ?string $provider = null)

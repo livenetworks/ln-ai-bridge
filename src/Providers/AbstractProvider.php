@@ -11,17 +11,17 @@ use LiveNetworks\LnAiBridge\DTO\AiRequest;
 use LiveNetworks\LnAiBridge\DTO\AiResponse;
 
 /**
- * Апстрактен провајдер со заедничка HTTP логика.
+ * Abstract provider with shared HTTP logic.
  *
- * Ја обезбедува Guzzle комуникацијата и error handling-от.
- * Субкласите треба само да ги имплементираат buildHeaders(), buildPayload() и parseResponse().
+ * Provides Guzzle communication and error handling.
+ * Subclasses only need to implement buildHeaders(), buildPayload() and parseResponse().
  */
 abstract class AbstractProvider implements AiProviderInterface
 {
 	protected Client $client;
 
 	/**
-	 * @param  array<string, mixed> $config Конфигурација на провајдерот (api_key, model, base_url, итн.)
+	 * @param  array<string, mixed> $config Provider configuration (api_key, model, base_url, etc.)
 	 */
 	public function __construct(
 		protected array $config,
@@ -33,10 +33,10 @@ abstract class AbstractProvider implements AiProviderInterface
 	}
 
 	/**
-	 * Испраќа барање до AI API-то.
+	 * Send a request to the AI API.
 	 *
-	 * Ги користи buildHeaders() и buildPayload() од субкласата за да го
-	 * состави HTTP барањето, го испраќа, и го парсира одговорот.
+	 * Uses buildHeaders() and buildPayload() from the subclass to compose
+	 * the HTTP request, sends it, and parses the response.
 	 */
 	public function send(AiRequest $request): AiResponse
 	{
@@ -64,26 +64,26 @@ abstract class AbstractProvider implements AiProviderInterface
 	}
 
 	/**
-	 * API endpoint патека (пр. "/v1/messages").
+	 * API endpoint path (e.g. "/v1/messages").
 	 */
 	abstract protected function endpoint(): string;
 
 	/**
-	 * HTTP хедери за API барањето.
+	 * HTTP headers for the API request.
 	 *
 	 * @return array<string, string>
 	 */
 	abstract protected function buildHeaders(): array;
 
 	/**
-	 * Тело на HTTP барањето за конкретниот провајдер.
+	 * HTTP request body for the specific provider.
 	 *
 	 * @return array<string, mixed>
 	 */
 	abstract protected function buildPayload(AiRequest $request): array;
 
 	/**
-	 * Парсирање на суровиот API одговор во унифициран AiResponse.
+	 * Parse the raw API response into a unified AiResponse.
 	 *
 	 * @param  array<string, mixed> $data
 	 */

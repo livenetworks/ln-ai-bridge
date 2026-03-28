@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace LiveNetworks\LnAiBridge\DTO;
 
 /**
- * Одговор од AI провајдер.
+ * Response from an AI provider.
  *
- * Унифициран формат за одговори од сите провајдери.
- * Содржи содржина, мета-информации, и суров одговор за дебагирање.
+ * Unified format for responses from all providers.
+ * Contains content, meta-information, and raw response for debugging.
  */
 readonly class AiResponse
 {
 	/**
-	 * @param  string      $content    Текстуална содржина на одговорот
-	 * @param  string      $provider   Име на провајдерот (claude, openai)
-	 * @param  string      $model      Модел кој го генерирал одговорот
-	 * @param  bool        $success    Дали барањето е успешно
-	 * @param  string|null $error      Порака за грешка (ако има)
-	 * @param  string|null $stopReason Причина за запирање на генерирањето
-	 * @param  array<string, int> $usage Потрошувачка на токени (input_tokens, output_tokens)
-	 * @param  array<string, mixed> $raw Суров одговор од API-то
+	 * @param  string      $content    Text content of the response
+	 * @param  string      $provider   Provider name (claude, openai)
+	 * @param  string      $model      Model that generated the response
+	 * @param  bool        $success    Whether the request was successful
+	 * @param  string|null $error      Error message (if any)
+	 * @param  string|null $stopReason Reason generation stopped
+	 * @param  array<string, int> $usage Token usage (input_tokens, output_tokens)
+	 * @param  array<string, mixed> $raw Raw API response
 	 */
 	public function __construct(
 		public string  $content,
@@ -34,7 +34,7 @@ readonly class AiResponse
 	) {}
 
 	/**
-	 * Креира успешен одговор.
+	 * Create a successful response.
 	 *
 	 * @param  array<string, int>   $usage
 	 * @param  array<string, mixed> $raw
@@ -59,7 +59,7 @@ readonly class AiResponse
 	}
 
 	/**
-	 * Креира неуспешен одговор (грешка).
+	 * Create a failed response (error).
 	 *
 	 * @param  array<string, mixed> $raw
 	 */
@@ -80,7 +80,7 @@ readonly class AiResponse
 	}
 
 	/**
-	 * Вкупен број на потрошени токени (input + output).
+	 * Total number of tokens consumed (input + output).
 	 */
 	public function totalTokens(): int
 	{

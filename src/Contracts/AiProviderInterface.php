@@ -8,25 +8,25 @@ use LiveNetworks\LnAiBridge\DTO\AiRequest;
 use LiveNetworks\LnAiBridge\DTO\AiResponse;
 
 /**
- * Интерфејс за AI провајдери.
+ * Interface for AI providers.
  *
- * Секој провајдер (Claude, OpenAI, итн.) мора да го имплементира овој интерфејс
- * за да може да се користи преку Bridge-от.
+ * Every provider (Claude, OpenAI, etc.) must implement this interface
+ * to be usable through the Bridge.
  */
 interface AiProviderInterface
 {
 	/**
-	 * Испраќа барање до AI провајдерот и враќа одговор.
+	 * Send a request to the AI provider and return a response.
 	 */
 	public function send(AiRequest $request): AiResponse;
 
 	/**
-	 * Враќа име на провајдерот (пр. "claude", "openai").
+	 * Return the provider name (e.g. "claude", "openai").
 	 */
 	public function name(): string;
 
 	/**
-	 * Враќа име на моделот кој се користи (пр. "claude-sonnet-4-20250514").
+	 * Return the model name in use (e.g. "claude-sonnet-4-20250514").
 	 */
 	public function model(): string;
 }

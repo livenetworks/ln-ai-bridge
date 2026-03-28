@@ -8,10 +8,10 @@ use LiveNetworks\LnAiBridge\DTO\AiRequest;
 use LiveNetworks\LnAiBridge\DTO\AiResponse;
 
 /**
- * Провајдер за OpenAI (Chat Completions API).
+ * Provider for OpenAI (Chat Completions API).
  *
- * Комуницира директно со OpenAI API преку Guzzle.
- * Поддржува multi-turn конверзации и системски пораки.
+ * Communicates directly with the OpenAI API via Guzzle.
+ * Supports multi-turn conversations and system messages.
  */
 class OpenAiProvider extends AbstractProvider
 {
@@ -34,16 +34,16 @@ class OpenAiProvider extends AbstractProvider
 	}
 
 	/**
-	 * Гради payload за OpenAI Chat Completions API.
+	 * Build payload for the OpenAI Chat Completions API.
 	 *
-	 * Системската порака е прв елемент во messages низата.
-	 * Историјата и тековниот prompt следат по неа.
+	 * The system message is the first element in the messages array.
+	 * History and current prompt follow after it.
 	 */
 	protected function buildPayload(AiRequest $request): array
 	{
 		$messages = [];
 
-		// Системска порака (ако има)
+		// System message (if provided)
 		if ($request->system !== null) {
 			$messages[] = [
 				'role'    => 'system',
@@ -51,7 +51,7 @@ class OpenAiProvider extends AbstractProvider
 			];
 		}
 
-		// Историја на претходни пораки (multi-turn)
+		// Previous message history (multi-turn)
 		foreach ($request->history as $message) {
 			$messages[] = [
 				'role'    => $message->role,
@@ -59,7 +59,7 @@ class OpenAiProvider extends AbstractProvider
 			];
 		}
 
-		// Тековен prompt како последна корисничка порака
+		// Current prompt as the last user message
 		$messages[] = [
 			'role'    => 'user',
 			'content' => $request->prompt,

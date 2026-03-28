@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace LiveNetworks\LnAiBridge\DTO;
 
 /**
- * Барање кон AI провајдер.
+ * Request to an AI provider.
  *
- * Содржи сè што е потребно за еден AI повик: prompt, системска порака,
- * контекст, историја на разговор, и параметри за генерирање.
+ * Contains everything needed for a single AI call: prompt, system message,
+ * context, conversation history, and generation parameters.
  */
 readonly class AiRequest
 {
 	/**
-	 * @param  string         $prompt      Главен prompt кон AI
-	 * @param  string|null    $system      Системска порака (system prompt)
-	 * @param  array<string, string> $context Контекст парови (клуч => вредност), се вметнуваат како XML тагови
-	 * @param  Message[]      $history     Историја на претходни пораки (multi-turn)
-	 * @param  float          $temperature Креативност на одговорот (0.0 - 1.0)
-	 * @param  int            $maxTokens   Максимален број токени во одговорот
-	 * @param  array<string, mixed> $meta   Дополнителни мета-податоци
+	 * @param  string         $prompt      Main prompt to AI
+	 * @param  string|null    $system      System message (system prompt)
+	 * @param  array<string, string> $context Context key-value pairs, injected as XML tags
+	 * @param  Message[]      $history     Previous messages history (multi-turn)
+	 * @param  float          $temperature Response creativity (0.0 - 1.0)
+	 * @param  int            $maxTokens   Maximum tokens in the response
+	 * @param  array<string, mixed> $meta   Additional metadata
 	 */
 	public function __construct(
 		public string  $prompt,

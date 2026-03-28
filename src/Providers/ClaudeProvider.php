@@ -8,10 +8,10 @@ use LiveNetworks\LnAiBridge\DTO\AiRequest;
 use LiveNetworks\LnAiBridge\DTO\AiResponse;
 
 /**
- * Провајдер за Anthropic Claude (Messages API).
+ * Provider for Anthropic Claude (Messages API).
  *
- * Комуницира директно со Anthropic API преку Guzzle.
- * Поддржува multi-turn конверзации и системски пораки.
+ * Communicates directly with the Anthropic API via Guzzle.
+ * Supports multi-turn conversations and system messages.
  */
 class ClaudeProvider extends AbstractProvider
 {
@@ -35,16 +35,16 @@ class ClaudeProvider extends AbstractProvider
 	}
 
 	/**
-	 * Гради payload за Anthropic Messages API.
+	 * Build payload for the Anthropic Messages API.
 	 *
-	 * Историјата и тековниот prompt се спојуваат во messages низа.
-	 * Системската порака се праќа одделно во "system" полето.
+	 * History and current prompt are merged into the messages array.
+	 * The system message is sent separately in the "system" field.
 	 */
 	protected function buildPayload(AiRequest $request): array
 	{
 		$messages = [];
 
-		// Историја на претходни пораки (multi-turn)
+		// Previous message history (multi-turn)
 		foreach ($request->history as $message) {
 			$messages[] = [
 				'role'    => $message->role,
@@ -52,7 +52,7 @@ class ClaudeProvider extends AbstractProvider
 			];
 		}
 
-		// Тековен prompt како последна корисничка порака
+		// Current prompt as the last user message
 		$messages[] = [
 			'role'    => 'user',
 			'content' => $request->prompt,

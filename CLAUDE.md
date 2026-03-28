@@ -21,16 +21,24 @@ Bridge-от е **"dumb pipe"** — НЕ знае за бизнис логика.
 - PHPDoc коментари на **македонски** за бизнис описи
 - Контекст injection преку XML тагови: `<key>value</key>`
 - Без external AI SDK-ови — директен Guzzle HTTP
+- UUID за PK на conversations, messages, summaries (HasUuids trait)
+- Auto-increment за usage_log (append-only, не треба UUID)
+- `const UPDATED_AT = null` за immutable модели (messages, summaries, usage_log)
+- tenant_id е САМО за billing/tracking, nullable — bridge-от НЕ филтрира по него
+- SoftDeletes само на conversations
 
 ## Структура
 
 ```
-config/ai-bridge.php          — publishable config
+config/ai-bridge.php           — publishable config
+database/migrations/           — publishable миграции (tag: ai-bridge-migrations)
 src/Contracts/                 — интерфејси (AiProviderInterface)
 src/DTO/                       — readonly DTOs (Message, AiRequest, AiResponse)
+src/Models/                    — Eloquent модели (AiConversation, AiMessage, AiConversationSummary, AiUsageLog)
 src/Providers/                 — AbstractProvider, ClaudeProvider, OpenAiProvider
+src/Services/                  — ConversationManager, SummarizationService, UsageTracker
 src/PromptBuilder.php          — fluent builder за AiRequest
-src/AiBridgeManager.php        — singleton оркестратор
+src/AiBridgeManager.php        — singleton оркестратор (+ auto usage tracking)
 src/Facades/AiBridge.php       — Laravel Facade
 src/AiBridgeServiceProvider.php — Service Provider
 ```

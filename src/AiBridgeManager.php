@@ -10,18 +10,19 @@ use LiveNetworks\LnAiBridge\DTO\AiRequest;
 use LiveNetworks\LnAiBridge\DTO\AiResponse;
 use LiveNetworks\LnAiBridge\Providers\ClaudeProvider;
 use LiveNetworks\LnAiBridge\Providers\OpenAiProvider;
+use LiveNetworks\LnAiBridge\Services\UsageTracker;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Главен менаџер (оркестратор) за AI Bridge.
+ * Main manager (orchestrator) for AI Bridge.
  *
- * Singleton кој управува со провајдерите, го резолвира стандардниот провајдер,
- * и овозможува регистрација на custom провајдери.
+ * Singleton that manages providers, resolves the default provider,
+ * and allows registration of custom providers.
  */
 class AiBridgeManager
 {
 	/**
-	 * Вградени провајдери (driver => class).
+	 * Built-in providers (driver => class).
 	 *
 	 * @var array<string, class-string<AiProviderInterface>>
 	 */
@@ -31,14 +32,14 @@ class AiBridgeManager
 	];
 
 	/**
-	 * Кеширани инстанци на провајдери.
+	 * Cached provider instances.
 	 *
 	 * @var array<string, AiProviderInterface>
 	 */
 	private array $resolved = [];
 
 	/**
-	 * Креира нов PromptBuilder за fluent градење на барања.
+	 * Create a new PromptBuilder for fluent request construction.
 	 */
 	public function prompt(string $prompt = ''): PromptBuilder
 	{
@@ -52,10 +53,10 @@ class AiBridgeManager
 	}
 
 	/**
-	 * Испраќа барање до AI провајдер.
+	 * Send a request to an AI provider.
 	 *
-	 * Ако не е наведен провајдер, се користи стандардниот од конфигурацијата.
-	 * Логирањето е опционално (конфигурирано во ai-bridge.logging).
+	 * If no provider is specified, the default from configuration is used.
+	 * Logging is optional (configured in ai-bridge.logging).
 	 */
 	public function send(AiRequest $request, ?string $provider = null): AiResponse
 	{
@@ -68,27 +69,31 @@ class AiBridgeManager
 
 		$this->logResponse($driver, $response);
 
+		if ($response->success) {
+			$this->trackUsage($response, $request);
+		}
+
 		return $response;
 	}
 
 	/**
-	 * Регистрира custom провајдер.
+	 * Register a custom provider.
 	 *
-	 * @param  string $driver  Име на driver-от (пр. "mistral")
-	 * @param  class-string<AiProviderInterface> $class  Класа на провајдерот
+	 * @param  string $driver  Driver name (e.g. "mistral")
+	 * @param  class-string<AiProviderInterface> $class  Provider class
 	 */
 	public function register(string $driver, string $class): self
 	{
 		$this->drivers[$driver] = $class;
 
-		// Инвалидирај кеширана инстанца ако постои
+		// Invalidate cached instance if it exists
 		unset($this->resolved[$driver]);
 
 		return $this;
 	}
 
 	/**
-	 * Резолвира провајдер инстанца по driver име.
+	 * Resolve a provider instance by driver name.
 	 */
 	private function resolve(string $driver): AiProviderInterface
 	{
@@ -97,7 +102,7 @@ class AiBridgeManager
 		}
 
 		if (! isset($this->drivers[$driver])) {
-			throw new InvalidArgumentException("AI провајдерот [{$driver}] не е регистриран.");
+			throw new InvalidArgumentException("AI provider [{$driver}] is not registered.");
 		}
 
 		$config = config("ai-bridge.providers.{$driver}", []);
@@ -109,7 +114,7 @@ class AiBridgeManager
 	}
 
 	/**
-	 * Логирање на барањето (ако е вклучено).
+	 * Log the request (if logging is enabled).
 	 */
 	private function logRequest(string $driver, AiRequest $request): void
 	{
@@ -127,7 +132,7 @@ class AiBridgeManager
 	}
 
 	/**
-	 * Логирање на одговорот (ако е вклучено).
+	 * Log the response (if logging is enabled).
 	 */
 	private function logResponse(string $driver, AiResponse $response): void
 	{
@@ -142,5 +147,35 @@ class AiBridgeManager
 			'stop_reason'  => $response->stopReason,
 			'error'        => $response->error,
 		]);
+	}
+
+	/**
+	 * Automatic usage tracking after every successful send().
+	 *
+	 * ConversationManager sets meta['skip_auto_tracking'] = true
+	 * to avoid double-logging (it logs explicitly).
+	 */
+	private function trackUsage(AiResponse $response, AiRequest $request): void
+	{
+		if (! config('ai-bridge.usage.tracking_enabled', true)) {
+			return;
+		}
+
+		if (! empty($request->meta['skip_auto_tracking'])) {
+			return;
+		}
+
+		try {
+			/** @var UsageTracker $tracker */
+			$tracker = app(UsageTracker::class);
+			$tracker->log(
+				response: $response,
+				tenantId: isset($request->meta['tenant_id']) ? (int) $request->meta['tenant_id'] : null,
+				userId: isset($request->meta['user_id']) ? (int) $request->meta['user_id'] : null,
+				conversationId: $request->meta['conversation_id'] ?? null,
+			);
+		} catch (\Throwable) {
+			// Never let a tracking error break the main flow
+		}
 	}
 }

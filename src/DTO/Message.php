@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace LiveNetworks\LnAiBridge\DTO;
 
 /**
- * Порака во конверзација со AI провајдер.
+ * Message in a conversation with an AI provider.
  *
- * Претставува единечна порака со улога (role) и содржина (content).
- * Се користи за градење на историја на разговор (multi-turn).
+ * Represents a single message with a role and content.
+ * Used for building conversation history (multi-turn).
  */
 readonly class Message
 {
@@ -18,7 +18,7 @@ readonly class Message
 	) {}
 
 	/**
-	 * Креира корисничка порака.
+	 * Create a user message.
 	 */
 	public static function user(string $content): self
 	{
@@ -26,7 +26,7 @@ readonly class Message
 	}
 
 	/**
-	 * Креира асистентска порака.
+	 * Create an assistant message.
 	 */
 	public static function assistant(string $content): self
 	{

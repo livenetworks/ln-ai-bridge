@@ -8,16 +8,16 @@ use LiveNetworks\LnAiBridge\DTO\AiRequest;
 use LiveNetworks\LnAiBridge\DTO\Message;
 
 /**
- * Fluent builder за градење на AI барања.
+ * Fluent builder for constructing AI requests.
  *
- * Овозможува чисто и читливо градење на AiRequest објекти.
- * Контекстот се вметнува како XML тагови во prompt-от.
+ * Enables clean and readable construction of AiRequest objects.
+ * Context is injected as XML tags into the prompt.
  *
- * Пример:
+ * Example:
  *   $request = AiBridge::prompt()
- *       ->system('Ти си корисен асистент.')
- *       ->context('customer_name', 'Јован')
- *       ->prompt('Напиши одговор за клиентот.')
+ *       ->system('You are a helpful assistant.')
+ *       ->context('customer_name', 'John')
+ *       ->prompt('Write a response for the customer.')
  *       ->temperature(0.5)
  *       ->build();
  */
@@ -41,7 +41,7 @@ class PromptBuilder
 	private array $meta = [];
 
 	/**
-	 * Поставува главен prompt.
+	 * Set the main prompt.
 	 */
 	public function prompt(string $prompt): self
 	{
@@ -51,7 +51,7 @@ class PromptBuilder
 	}
 
 	/**
-	 * Поставува системска порака.
+	 * Set the system message.
 	 */
 	public function system(string $system): self
 	{
@@ -61,10 +61,10 @@ class PromptBuilder
 	}
 
 	/**
-	 * Додава контекст пар (клуч => вредност).
+	 * Add a context pair (key => value).
 	 *
-	 * Контекстот се вметнува како XML тагови во prompt-от при build().
-	 * Пример: context('customer_name', 'Јован') → <customer_name>Јован</customer_name>
+	 * Context is injected as XML tags into the prompt during build().
+	 * Example: context('customer_name', 'John') -> <customer_name>John</customer_name>
 	 */
 	public function context(string $key, string $value): self
 	{
@@ -74,7 +74,7 @@ class PromptBuilder
 	}
 
 	/**
-	 * Поставува историја на претходни пораки (multi-turn).
+	 * Set the previous message history (multi-turn).
 	 *
 	 * @param  Message[] $messages
 	 */
@@ -86,7 +86,7 @@ class PromptBuilder
 	}
 
 	/**
-	 * Додава единечна порака во историјата.
+	 * Append a single message to the history.
 	 */
 	public function addMessage(string $role, string $content): self
 	{
@@ -96,7 +96,7 @@ class PromptBuilder
 	}
 
 	/**
-	 * Поставува temperature (креативност) на одговорот.
+	 * Set the response temperature (creativity).
 	 */
 	public function temperature(float $temperature): self
 	{
@@ -106,7 +106,7 @@ class PromptBuilder
 	}
 
 	/**
-	 * Поставува максимален број на токени во одговорот.
+	 * Set the maximum number of tokens in the response.
 	 */
 	public function maxTokens(int $maxTokens): self
 	{
@@ -116,7 +116,7 @@ class PromptBuilder
 	}
 
 	/**
-	 * Додава мета-податок.
+	 * Add a metadata entry.
 	 */
 	public function meta(string $key, mixed $value): self
 	{
@@ -126,9 +126,9 @@ class PromptBuilder
 	}
 
 	/**
-	 * Гради AiRequest објект.
+	 * Build the AiRequest object.
 	 *
-	 * Контекстот се вметнува како XML тагови на почетокот на prompt-от.
+	 * Context is injected as XML tags at the beginning of the prompt.
 	 */
 	public function build(): AiRequest
 	{
@@ -146,10 +146,10 @@ class PromptBuilder
 	}
 
 	/**
-	 * Го спојува контекстот (XML тагови) со prompt-от.
+	 * Merge context (XML tags) with the prompt.
 	 *
-	 * Секој контекст пар се претвора во XML таг:
-	 * <клуч>вредност</клуч>
+	 * Each context pair is converted to an XML tag:
+	 * <key>value</key>
 	 */
 	private function buildPromptWithContext(): string
 	{

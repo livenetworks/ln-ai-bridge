@@ -9,7 +9,7 @@ return [
 	| Default AI Provider
 	|--------------------------------------------------------------------------
 	|
-	| Стандарден провајдер кој се користи кога не е експлицитно наведен.
+	| Default provider used when none is explicitly specified.
 	|
 	 */
 
@@ -20,8 +20,8 @@ return [
 	| AI Providers
 	|--------------------------------------------------------------------------
 	|
-	| Конфигурација за секој AI провајдер. Секој провајдер има свој API клуч,
-	| модел, и base URL.
+	| Configuration for each AI provider. Each provider has its own API key,
+	| model, and base URL.
 	|
 	 */
 
@@ -47,7 +47,7 @@ return [
 	| Logging
 	|--------------------------------------------------------------------------
 	|
-	| Дали да се логираат AI барањата и одговорите.
+	| Whether to log AI requests and responses.
 	|
 	 */
 
@@ -58,7 +58,7 @@ return [
 	| Defaults
 	|--------------------------------------------------------------------------
 	|
-	| Стандардни вредности за temperature, max tokens и timeout.
+	| Default values for temperature, max tokens, and timeout.
 	|
 	 */
 
@@ -66,6 +66,34 @@ return [
 		'temperature' => 0.4,
 		'max_tokens'  => 8192,
 		'timeout'     => 60,
+	],
+
+	/*
+	|--------------------------------------------------------------------------
+	| Conversation
+	|--------------------------------------------------------------------------
+	|
+	| Settings for conversation management and automatic summarization.
+	|
+	 */
+
+	'conversation' => [
+		'summarize_threshold' => 20,
+		'keep_recent'         => 6,
+		'summary_max_tokens'  => 500,
+	],
+
+	/*
+	|--------------------------------------------------------------------------
+	| Usage Tracking
+	|--------------------------------------------------------------------------
+	|
+	| Token usage tracking for billing/tracking.
+	|
+	 */
+
+	'usage' => [
+		'tracking_enabled' => env('AI_BRIDGE_USAGE_TRACKING', true),
 	],
 
 ];
