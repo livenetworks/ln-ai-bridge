@@ -6,6 +6,7 @@ namespace LiveNetworks\LnAiBridge\Providers;
 
 use LiveNetworks\LnAiBridge\DTO\AiRequest;
 use LiveNetworks\LnAiBridge\DTO\AiResponse;
+use LiveNetworks\LnAiBridge\DTO\ToolCall;
 
 /**
  * Provider for OpenAI (Chat Completions API).
@@ -38,6 +39,7 @@ class OpenAiProvider extends AbstractProvider
 	 *
 	 * The system message is the first element in the messages array.
 	 * History and current prompt follow after it.
+	 * Tool definitions and results are appended when present.
 	 */
 	protected function buildPayload(AiRequest $request): array
 	{
@@ -65,20 +67,59 @@ class OpenAiProvider extends AbstractProvider
 			'content' => $request->prompt,
 		];
 
-		return [
+		// Tool results from previous executions
+		if (!empty($request->toolResults)) {
+			// The assistant previously requested tools — reconstruct the response
+			if (!empty($request->meta['_assistant_message'])) {
+				$messages[] = $request->meta['_assistant_message'];
+			}
+
+			foreach ($request->toolResults as $result) {
+				$messages[] = [
+					'role'         => 'tool',
+					'tool_call_id' => $result->toolCallId,
+					'content'      => $result->content,
+				];
+			}
+		}
+
+		$payload = [
 			'model'       => $this->model(),
 			'messages'    => $messages,
 			'max_tokens'  => $request->maxTokens,
 			'temperature' => $request->temperature,
 		];
+
+		// Tool definitions
+		if (!empty($request->tools)) {
+			$payload['tools'] = array_map(
+				fn ($tool) => $tool->toOpenAiFormat(),
+				$request->tools,
+			);
+		}
+
+		return $payload;
 	}
 
+	/**
+	 * Parse a response from the OpenAI API.
+	 *
+	 * If finish_reason is "tool_calls", tool calls are parsed from the message.
+	 */
 	protected function parseResponse(array $data): AiResponse
 	{
-		$content = $data['choices'][0]['message']['content'] ?? '';
+		$message = $data['choices'][0]['message'] ?? [];
+		$content = $message['content'] ?? '';
+		$toolCalls = [];
+
+		if (!empty($message['tool_calls'])) {
+			foreach ($message['tool_calls'] as $toolCall) {
+				$toolCalls[] = ToolCall::fromOpenAiResponse($toolCall);
+			}
+		}
 
 		return AiResponse::ok(
-			content:    $content,
+			content:    $content ?? '',
 			provider:   $this->name(),
 			model:      $data['model'] ?? $this->model(),
 			stopReason: $data['choices'][0]['finish_reason'] ?? null,
@@ -86,7 +127,8 @@ class OpenAiProvider extends AbstractProvider
 				'input_tokens'  => $data['usage']['prompt_tokens'] ?? 0,
 				'output_tokens' => $data['usage']['completion_tokens'] ?? 0,
 			],
-			raw: $data,
+			raw:        $data,
+			toolCalls:  $toolCalls,
 		);
 	}
 }

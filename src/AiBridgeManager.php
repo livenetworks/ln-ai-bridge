@@ -6,10 +6,12 @@ namespace LiveNetworks\LnAiBridge;
 
 use InvalidArgumentException;
 use LiveNetworks\LnAiBridge\Contracts\AiProviderInterface;
+use LiveNetworks\LnAiBridge\Contracts\ToolExecutorInterface;
 use LiveNetworks\LnAiBridge\DTO\AiRequest;
 use LiveNetworks\LnAiBridge\DTO\AiResponse;
 use LiveNetworks\LnAiBridge\Providers\ClaudeProvider;
 use LiveNetworks\LnAiBridge\Providers\OpenAiProvider;
+use LiveNetworks\LnAiBridge\Services\ToolRunner;
 use LiveNetworks\LnAiBridge\Services\UsageTracker;
 use Illuminate\Support\Facades\Log;
 
@@ -39,6 +41,13 @@ class AiBridgeManager
 	private array $resolved = [];
 
 	/**
+	 * Registered tool executors (tool_name => executor).
+	 *
+	 * @var array<string, ToolExecutorInterface>
+	 */
+	private array $toolExecutors = [];
+
+	/**
 	 * Create a new PromptBuilder for fluent request construction.
 	 */
 	public function prompt(string $prompt = ''): PromptBuilder
@@ -53,16 +62,69 @@ class AiBridgeManager
 	}
 
 	/**
+	 * Register a tool executor for a specific tool.
+	 *
+	 * @param  string                 $name     Tool name (e.g. "get_document_content")
+	 * @param  ToolExecutorInterface  $executor Executor that handles the tool
+	 */
+	public function registerTool(string $name, ToolExecutorInterface $executor): self
+	{
+		$this->toolExecutors[$name] = $executor;
+
+		return $this;
+	}
+
+	/**
 	 * Send a request to an AI provider.
 	 *
 	 * If no provider is specified, the default from configuration is used.
 	 * Logging is optional (configured in ai-bridge.logging).
+	 * If the AI requests tools, automatically executes them and makes a new request.
 	 */
-	public function send(AiRequest $request, ?string $provider = null): AiResponse
+	public function send(AiRequest $request, ?string $provider = null, int $_depth = 0): AiResponse
 	{
 		$driver = $provider ?? config('ai-bridge.default', 'claude');
 		$instance = $this->resolve($driver);
+		$maxIterations = (int) config('ai-bridge.tools.max_iterations', 5);
 
+		if (!config('ai-bridge.tools.enabled', true)) {
+			return $this->sendOnce($instance, $driver, $request);
+		}
+
+		$response = $this->sendOnce($instance, $driver, $request);
+
+		// Auto-resolve tool calls loop
+		if ($response->success && $response->hasToolCalls() && !empty($this->toolExecutors) && $_depth < $maxIterations) {
+			$runner = new ToolRunner($this->toolExecutors);
+			$toolResults = $runner->run($response);
+
+			$this->logToolCalls($driver, $response, $toolResults);
+
+			// Prepare assistant content for the next request
+			$meta = $request->meta;
+			if ($driver === 'claude') {
+				$meta['_assistant_content'] = $response->raw['content'] ?? [];
+			} else {
+				// OpenAI — pass the full assistant message
+				$meta['_assistant_message'] = $response->raw['choices'][0]['message'] ?? [];
+			}
+
+			$nextRequest = $request->with([
+				'toolResults' => $toolResults,
+				'meta'        => $meta,
+			]);
+
+			return $this->send($nextRequest, $provider, $_depth + 1);
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Send a single request (without tool auto-resolve).
+	 */
+	private function sendOnce(AiProviderInterface $instance, string $driver, AiRequest $request): AiResponse
+	{
 		$this->logRequest($driver, $request);
 
 		$response = $instance->send($request);
@@ -147,6 +209,34 @@ class AiBridgeManager
 			'stop_reason'  => $response->stopReason,
 			'error'        => $response->error,
 		]);
+	}
+
+	/**
+	 * Log tool calls and their results.
+	 *
+	 * @param  ToolResult[] $toolResults
+	 */
+	private function logToolCalls(string $driver, AiResponse $response, array $toolResults): void
+	{
+		if (! config('ai-bridge.logging', false)) {
+			return;
+		}
+
+		foreach ($response->toolCalls as $call) {
+			Log::debug("AiBridge [{$driver}] tool call", [
+				'tool_id'   => $call->id,
+				'tool_name' => $call->name,
+				'arguments' => $call->arguments,
+			]);
+		}
+
+		foreach ($toolResults as $result) {
+			Log::debug("AiBridge [{$driver}] tool result", [
+				'tool_call_id' => $result->toolCallId,
+				'is_error'     => $result->isError,
+				'content'      => mb_substr($result->content, 0, 200),
+			]);
+		}
 	}
 
 	/**

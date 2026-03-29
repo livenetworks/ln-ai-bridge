@@ -9,6 +9,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use LiveNetworks\LnAiBridge\Contracts\AiProviderInterface;
 use LiveNetworks\LnAiBridge\DTO\AiRequest;
 use LiveNetworks\LnAiBridge\DTO\AiResponse;
+use LiveNetworks\LnAiBridge\Services\RetryHandler;
 
 /**
  * Abstract provider with shared HTTP logic.
@@ -37,18 +38,23 @@ abstract class AbstractProvider implements AiProviderInterface
 	 *
 	 * Uses buildHeaders() and buildPayload() from the subclass to compose
 	 * the HTTP request, sends it, and parses the response.
+	 * Automatically retries on retryable failures (429, 5xx) with exponential backoff.
 	 */
 	public function send(AiRequest $request): AiResponse
 	{
+		$retryHandler = new RetryHandler(config('ai-bridge.retry', []));
+
 		try {
-			$response = $this->client->post($this->endpoint(), [
-				'headers' => $this->buildHeaders(),
-				'json'    => $this->buildPayload($request),
-			]);
+			return $retryHandler->execute(function () use ($request) {
+				$response = $this->client->post($this->endpoint(), [
+					'headers' => $this->buildHeaders(),
+					'json'    => $this->buildPayload($request),
+				]);
 
-			$data = json_decode($response->getBody()->getContents(), true);
+				$data = json_decode($response->getBody()->getContents(), true);
 
-			return $this->parseResponse($data);
+				return $this->parseResponse($data);
+			}, $this->name());
 		} catch (GuzzleException $e) {
 			return AiResponse::fail(
 				error:    $e->getMessage(),

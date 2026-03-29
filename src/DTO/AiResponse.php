@@ -21,6 +21,7 @@ readonly class AiResponse
 	 * @param  string|null $stopReason Reason generation stopped
 	 * @param  array<string, int> $usage Token usage (input_tokens, output_tokens)
 	 * @param  array<string, mixed> $raw Raw API response
+	 * @param  ToolCall[]  $toolCalls  Tool calls requested by the AI
 	 */
 	public function __construct(
 		public string  $content,
@@ -31,13 +32,31 @@ readonly class AiResponse
 		public ?string $stopReason = null,
 		public array   $usage = [],
 		public array   $raw = [],
+		public array   $toolCalls = [],
 	) {}
+
+	/**
+	 * Whether the AI requested tool calls.
+	 */
+	public function hasToolCalls(): bool
+	{
+		return !empty($this->toolCalls);
+	}
+
+	/**
+	 * Whether the response is a tool use (alias for hasToolCalls, more readable).
+	 */
+	public function isToolUse(): bool
+	{
+		return $this->hasToolCalls();
+	}
 
 	/**
 	 * Create a successful response.
 	 *
 	 * @param  array<string, int>   $usage
 	 * @param  array<string, mixed> $raw
+	 * @param  ToolCall[]           $toolCalls
 	 */
 	public static function ok(
 		string  $content,
@@ -46,6 +65,7 @@ readonly class AiResponse
 		?string $stopReason = null,
 		array   $usage = [],
 		array   $raw = [],
+		array   $toolCalls = [],
 	): self {
 		return new self(
 			content:    $content,
@@ -55,6 +75,7 @@ readonly class AiResponse
 			stopReason: $stopReason,
 			usage:      $usage,
 			raw:        $raw,
+			toolCalls:  $toolCalls,
 		);
 	}
 

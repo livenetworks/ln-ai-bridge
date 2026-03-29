@@ -6,6 +6,7 @@ namespace LiveNetworks\LnAiBridge;
 
 use LiveNetworks\LnAiBridge\DTO\AiRequest;
 use LiveNetworks\LnAiBridge\DTO\Message;
+use LiveNetworks\LnAiBridge\DTO\Tool;
 
 /**
  * Fluent builder for constructing AI requests.
@@ -39,6 +40,9 @@ class PromptBuilder
 
 	/** @var array<string, mixed> */
 	private array $meta = [];
+
+	/** @var Tool[] */
+	private array $tools = [];
 
 	/**
 	 * Set the main prompt.
@@ -126,6 +130,30 @@ class PromptBuilder
 	}
 
 	/**
+	 * Add a tool definition.
+	 *
+	 * @param  array<string, mixed> $parameters JSON Schema of parameters
+	 */
+	public function tool(string $name, string $description, array $parameters): self
+	{
+		$this->tools[] = Tool::make($name, $description, $parameters);
+
+		return $this;
+	}
+
+	/**
+	 * Add multiple tool definitions at once.
+	 *
+	 * @param  Tool[] $tools
+	 */
+	public function tools(array $tools): self
+	{
+		$this->tools = array_merge($this->tools, $tools);
+
+		return $this;
+	}
+
+	/**
 	 * Build the AiRequest object.
 	 *
 	 * Context is injected as XML tags at the beginning of the prompt.
@@ -142,6 +170,7 @@ class PromptBuilder
 			temperature: $this->temperature ?? (float) config('ai-bridge.defaults.temperature', 0.7),
 			maxTokens:   $this->maxTokens ?? (int) config('ai-bridge.defaults.max_tokens', 1024),
 			meta:        $this->meta,
+			tools:       $this->tools,
 		);
 	}
 

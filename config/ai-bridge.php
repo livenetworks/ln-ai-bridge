@@ -85,6 +85,41 @@ return [
 
 	/*
 	|--------------------------------------------------------------------------
+	| Tool Use
+	|--------------------------------------------------------------------------
+	|
+	| Settings for AI tool use (function calling).
+	| max_iterations limits recursive tool calls to prevent infinite loops.
+	|
+	 */
+
+	'tools' => [
+		'enabled'        => env('AI_BRIDGE_TOOLS_ENABLED', true),
+		'max_iterations' => (int) env('AI_BRIDGE_TOOLS_MAX_ITERATIONS', 5),
+	],
+
+	/*
+	|--------------------------------------------------------------------------
+	| Retry
+	|--------------------------------------------------------------------------
+	|
+	| Automatic retry with exponential backoff for retryable API errors.
+	| Retryable codes: 429 (rate limit), 500, 502, 503, 529 (Anthropic overloaded).
+	| Delays: base_delay_ms * multiplier^attempt (default: 1s, 2s, 4s).
+	| Honors Retry-After header on 429 responses.
+	|
+	 */
+
+	'retry' => [
+		'enabled'         => env('AI_BRIDGE_RETRY_ENABLED', true),
+		'max_retries'     => (int) env('AI_BRIDGE_RETRY_MAX', 3),
+		'base_delay_ms'   => (int) env('AI_BRIDGE_RETRY_DELAY', 1000),
+		'multiplier'      => (int) env('AI_BRIDGE_RETRY_MULTIPLIER', 2),
+		'retryable_codes' => [429, 500, 502, 503, 529],
+	],
+
+	/*
+	|--------------------------------------------------------------------------
 	| Usage Tracking
 	|--------------------------------------------------------------------------
 	|
