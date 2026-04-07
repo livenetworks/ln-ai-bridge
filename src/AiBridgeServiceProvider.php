@@ -42,6 +42,8 @@ class AiBridgeServiceProvider extends ServiceProvider
 	{
 		$this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
+		$this->publishSkillFile();
+
 		if ($this->app->runningInConsole()) {
 			$this->publishes([
 				__DIR__ . '/../config/ai-bridge.php' => config_path('ai-bridge.php'),
@@ -52,8 +54,32 @@ class AiBridgeServiceProvider extends ServiceProvider
 			], 'ai-bridge-migrations');
 
 			$this->publishes([
-				__DIR__ . '/../SKILL.md' => base_path('.claude/skills/ln-ai-bridge.md'),
+				__DIR__ . '/../SKILL.md' => base_path('.claude/skills/ai-bridge/SKILL.md'),
 			], 'ai-bridge-skill');
 		}
+	}
+
+	/**
+	 * Auto-publish the SKILL.md file for Claude Code integration.
+	 *
+	 * Copies the skill file to the application's .claude/skills/ directory
+	 * on every boot. Always overwrites to keep the skill in sync with the
+	 * installed package version.
+	 */
+	protected function publishSkillFile(): void
+	{
+		$source = __DIR__ . '/../SKILL.md';
+		$destination = base_path('.claude/skills/ai-bridge/SKILL.md');
+
+		if (! file_exists($source)) {
+			return;
+		}
+
+		$dir = dirname($destination);
+		if (! is_dir($dir)) {
+			mkdir($dir, 0755, true);
+		}
+
+		copy($source, $destination);
 	}
 }
